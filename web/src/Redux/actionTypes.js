@@ -1,0 +1,13 @@
+export const EXPENSE_REQUEST = "EXPENSE_REQUEST";
+export const EXPENSE_FAILURE = "EXPENSE_FAILURE";
+export const SET_LOADING = "SET_LOADING";
+export const SET_ERROR = "SET_ERROR";
+
+// POST
+export const ADD_EXPENSE = "ADD_EXPENSE";
+
+// GET
+export const SET_EXPENSES = "SET_EXPENSES";
+
+// DELETE
+export const DELETE_EXPENSE = "DELETE_EXPENSE";
