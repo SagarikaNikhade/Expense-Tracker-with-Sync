@@ -4,12 +4,18 @@ require("dotenv").config();
 const cors = require("cors");
 const { connection } = require("./config/db");
 
+// Routes
+const { ExpenseRouter } = require("./routes/expense.route");
+
 app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Welcome to Expense Tracker!");
 });
+
+// Expense Routes
+app.use("/expenses", ExpenseRouter);
 
 app.listen(process.env.port, async () => {
   try {
