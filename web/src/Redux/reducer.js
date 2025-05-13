@@ -36,7 +36,10 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         deletingId: null,
-        expenses: state.expenses.filter((exp) => exp._id !== action.payload),
+        expenses: state.expenses.map((exp) =>
+      exp._id === action.payload ? { ...exp, isDeleted: true } : exp
+    ),
+        // expenses: state.expenses.filter((exp) => exp._id !== action.payload),
       };
 
     case DELETE_EXPENSE_FAILURE:

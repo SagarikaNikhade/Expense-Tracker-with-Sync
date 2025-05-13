@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { addExpense } from '../Redux/action';
 
 const ExpenseForm = () => {
+    const dispatch = useDispatch();
     const [formData, setFormData] = useState({
     amount: '',
     category: '',
+    description: '',
     date: new Date().toISOString().slice(0, 10)
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,7 +23,7 @@ const ExpenseForm = () => {
     e.preventDefault();
     
     // Validate form data
-    if (!formData.amount || !formData.category) {
+    if (!formData.amount || !formData.category || !formData.description) {
       alert('Please fill in all required fields');
       return;
     }
@@ -34,12 +37,14 @@ const ExpenseForm = () => {
         amount: parseFloat(formData.amount)
       };
       
-      await addExpense(expenseData);
-      
+      // await addExpense(expenseData);
+       await dispatch(addExpense(expenseData)); 
+       alert('Expense added successfully !');
       // Reset form after successful submission
       setFormData({
         amount: '',
         category: '',
+        description: '',
         date: new Date().toISOString().slice(0, 10)
       });
     } catch (error) {
@@ -101,6 +106,18 @@ const ExpenseForm = () => {
           />
         </div>
         
+        <div className="form-group">
+          <label htmlFor="description">Description *</label>
+          <textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Enter description"
+            required
+          />
+        </div>
+
         <button 
           type="submit" 
           disabled={isSubmitting}

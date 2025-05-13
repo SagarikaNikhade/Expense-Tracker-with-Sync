@@ -76,7 +76,8 @@ const ExpenseList = () => {
                 <td>
                   <button
                     onClick={() => handleDelete(expense._id)}
-                    className={`delete-button ${isDeleting ? "deleting" : ""}`}
+                    // className={`delete-button ${isDeleting ? "deleting" : ""}`}
+                    className={`delete-button ${expense.isDeleted ? "deleted" : "active"} ${isDeleting ? "deleting" : ""}`}
                     disabled={isDeleting}
                   >
                     {isDeleting ? "Deleting..." : "Delete"}
