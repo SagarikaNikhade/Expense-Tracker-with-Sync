@@ -11,21 +11,39 @@ import {
 } from "./actionTypes";
 import axios from "axios";
 
-const API_URL = 'http://localhost:8080';
+const API_URL = 'https://expense-tracker-be-8n3q.onrender.com'
+// 'http://localhost:8080';
 
-export const getExpenses = (lastSyncTime) => (dispatch) =>{
-   dispatch({ type: EXPENSE_REQUEST });
-    axios
-        .get(`${API_URL}/expenses`)
-            // ?lastSyncTime=${lastSyncTime}`)
-        .then((res) => {
-            console.log(res.data)
-            dispatch({ type: GET_EXPENSES , payload:res.data})
-        })
-        .catch(() => {
-            dispatch({ type: EXPENSE_FAILURE })
-        })
-}
+// export const getExpenses = (lastSyncTime) => (dispatch) =>{
+//    dispatch({ type: EXPENSE_REQUEST });
+//     axios
+//         .get(`${API_URL}/expenses?lastSyncTime=${lastSyncTime}`)
+//         .then((res) => {
+//             console.log(res.data)
+//             dispatch({ type: GET_EXPENSES , payload:res.data})
+//         })
+//         .catch(() => {
+//             dispatch({ type: EXPENSE_FAILURE })
+//         })
+// }
+export const getExpenses = (lastSyncTime) => (dispatch) => {
+  dispatch({ type: EXPENSE_REQUEST });
+
+  const url = lastSyncTime
+    ? `${API_URL}/expenses?lastSyncTime=${encodeURIComponent(lastSyncTime)}`
+    : `${API_URL}/expenses`;
+
+  axios
+    .get(url)
+    .then((res) => {
+      console.log(res.data);
+      dispatch({ type: GET_EXPENSES, payload: res.data });
+    })
+    .catch(() => {
+      dispatch({ type: EXPENSE_FAILURE });
+    });
+};
+
 
 export const deleteExpense = (_id) => (dispatch) => {
   dispatch({ type: DELETE_EXPENSE_REQUEST, payload: _id });
