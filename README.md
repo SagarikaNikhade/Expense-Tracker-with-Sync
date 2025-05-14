@@ -100,3 +100,28 @@ react-native-reanimated
 2. cd my-app
 3. npm install
 4. npx start
+
+### 📝 Offline Sync Overview
+This app supports offline-first expense tracking with automatic background sync.
+
+# 🔁 How Offline Sync Works
+Offline Add:
+When you add a new expense while offline, it’s saved locally (using AsyncStorage). Once the device is back online, these are sent to the server via a sync process.
+
+Offline Delete:
+When deleting an expense offline, the item is removed from the UI and stored in a "delete queue." When back online, it will be deleted from the server.
+
+Startup Sync:
+On app start, the app tries to:
+
+Load cached expenses from local storage.
+
+Fetch latest expenses from the server.
+
+Merge and deduplicate them by _id.
+
+Attempt to sync any offline additions or deletions.
+
+Sync Trigger:
+Sync runs on app launch and after successful network reconnection. You can also manually trigger it if needed.
+
