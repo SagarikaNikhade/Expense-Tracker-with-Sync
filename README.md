@@ -1,5 +1,4 @@
 # Expense-Tracker-with-Sync
-https://fabulous-empanada-b16780.netlify.app/
 
 This is a **Full-Stack Expense Tracker** application with:
 
@@ -12,10 +11,9 @@ The mobile app works offline and syncs with the backend when online using a **ti
 ---
 
 ## 📁 Project Structure
-root/
-├── server/ # Node.js + Express + MongoDB API
-├── web/ # React.js web application
-└── mobile/ # React Native (Expo) offline app
+1. server  -  Node.js + Express + MongoDB API
+2. web -  React.js web application
+3. mobile/ -  React Native (Expo) offline app
 
 ## 🌐 Server Folder (Backend)
 
@@ -47,8 +45,8 @@ MongoDB + Mongoose
 dotenv for config
 
 # To run:
-npm install
-npm run start
+1. npm install
+2. npm run start
 
 ## 🌐 React Web App
 
@@ -72,9 +70,9 @@ https://fabulous-empanada-b16780.netlify.app
 - React Router
 
 # To run:
-cd web
-npm install
-npm start
+1. cd web
+2. npm install
+3. npm start
 
 ## 🌐 React Native Mobile App (Expo)
 ### 🔹 Features
@@ -98,7 +96,7 @@ react-native-gesture-handler
 react-native-reanimated
 
 # To run:
-cd mobile
-cd my-app
-npm install
-npx start
+1. cd mobile
+2. cd my-app
+3. npm install
+4. npx start
