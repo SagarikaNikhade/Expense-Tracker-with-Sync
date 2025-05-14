@@ -11,72 +11,127 @@ import {
 } from "react-native";
 import { SwipeListView } from "react-native-swipe-list-view";
 import { fetchExpenses, deleteExpense } from "../services/api";
-import { loadExpenses, saveExpenses } from "../storage/localDB";
+import { addToDeleteQueue, loadExpenses, saveExpenses } from "../storage/localDB";
 import ExpenseItem from "../component/ExpenseItem";
+import { isOnline } from "../services/network";
+import { syncExpenses } from "../services/sync";
 
 export default function TabTwoScreen() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
 
-  useEffect(() => {
-    const init = async () => {
-      setLoading(true);
+  // useEffect(() => {
+  //   const init = async () => {
+  //     setLoading(true);
       
-      try {
-        // First try to load local data
-        const local = await loadExpenses();
-        if (local && local.length > 0) {
-          console.log("Loaded local expenses:", local);
-          setExpenses(local);
-        }
+  //     try {
+  //       // First try to load local data
+  //       const local = await loadExpenses();
+  //       if (local && local.length > 0) {
+  //         console.log("Loaded local expenses:", local);
+  //         setExpenses(local);
+  //       }
 
-        // Then try to fetch remote data
-        try {
-          console.log("Fetching remote expenses...");
-          const remote = await fetchExpenses();
-          console.log("Fetched remote expenses:", remote);
+  //       // Then try to fetch remote data
+  //       try {
+  //         console.log("Fetching remote expenses...");
+  //         const remote = await fetchExpenses();
+  //         console.log("Fetched remote expenses:", remote);
           
-          if (remote && remote.length > 0) {
-            // Merge local and remote data, removing duplicates
-            const merged = [...(local || []), ...(remote || [])];
-            const unique:any = Array.from(
-              new Map(merged.map((e) => [e._id, e])).values()
-            );
-            console.log("Merged expenses:", unique);
+  //         if (remote && remote.length > 0) {
+  //           // Merge local and remote data, removing duplicates
+  //           const merged = [...(local || []), ...(remote || [])];
+  //           const unique:any = Array.from(
+  //             new Map(merged.map((e) => [e._id, e])).values()
+  //           );
+  //           console.log("Merged expenses:", unique);
             
-            setExpenses(unique);
-            saveExpenses(unique);
-          }
-        } catch (err) {
-          console.error("API error:", err);
-          // We already loaded local data if available, so just show a message
-          setError("Couldn't connect to server. Showing locally saved expenses.");
-        }
-      } catch (err) {
-        console.error("Error in initialization:", err);
-        setError("Failed to load expenses");
-      } finally {
-        setLoading(false);
-      }
-    };
+  //           setExpenses(unique);
+  //           saveExpenses(unique);
+  //         }
+  //       } catch (err) {
+  //         console.error("API error:", err);
+  //         // We already loaded local data if available, so just show a message
+  //         setError("Couldn't connect to server. Showing locally saved expenses.");
+  //       }
+  //     } catch (err) {
+  //       console.error("Error in initialization:", err);
+  //       setError("Failed to load expenses");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    init();
-  }, []);
+  //   init();
+  // }, []);
 
-  const handleDelete = async (rowKey:any) => {
-    const updated = expenses.filter((e:any) => e._id !== rowKey);
-    setExpenses(updated);
-    saveExpenses(updated);
+  // const handleDelete = async (rowKey:any) => {
+  //   const updated = expenses.filter((e:any) => e._id !== rowKey);
+  //   setExpenses(updated);
+  //   saveExpenses(updated);
 
+  //   try {
+  //     await deleteExpense(rowKey);
+  //     Alert.alert("Sync Notice", "IsDeleted become true. Will sync when connection is restored.");
+  //   } catch (err) {
+  //     console.error("Delete error:", err);
+  //     Alert.alert("Sync Notice", "Deleted locally. Will sync when connection is restored.");
+  //   }
+  // };
+
+  useEffect(() => {
+  const init = async () => {
+    setLoading(true);
     try {
-      await deleteExpense(rowKey);
-      Alert.alert("Sync Notice", "IsDeleted become true. Will sync when connection is restored.");
+      const local = await loadExpenses();
+      if (local.length > 0) setExpenses(local);
+
+      try {
+        const remote = await fetchExpenses();
+        const merged = [...(local || []), ...(remote || [])];
+        const unique:any = Array.from(new Map(merged.map(e => [e._id, e])).values());
+        setExpenses(unique);
+        saveExpenses(unique);
+      } catch (err) {
+        console.error("API error:", err);
+        setError("Couldn't connect to server. Showing locally saved expenses.");
+      }
+
+      // Trigger sync attempt
+      await syncExpenses();
     } catch (err) {
-      console.error("Delete error:", err);
-      Alert.alert("Sync Notice", "Deleted locally. Will sync when connection is restored.");
+      setError("Failed to load expenses");
+    } finally {
+      setLoading(false);
     }
   };
+
+  init();
+}, []);
+
+  const handleDelete = async (rowKey: any) => {
+  const updated = expenses.filter((e: any) => e._id !== rowKey);
+  setExpenses(updated);
+  await saveExpenses(updated);
+
+  const online = await isOnline();
+
+  if (online) {
+    try {
+      await deleteExpense(rowKey);
+      await syncExpenses(); // just in case queue existed
+      Alert.alert("Deleted", "Expense deleted successfully.");
+    } catch (err) {
+      console.error("Delete error:", err);
+      await addToDeleteQueue(rowKey);
+      Alert.alert("Offline", "Deleted locally. Will sync when online.");
+    }
+  } else {
+    await addToDeleteQueue(rowKey);
+    Alert.alert("Offline", "Deleted locally. Will sync when online.");
+  }
+};
 
   const renderHeader = () => (
     <View style={styles.headerRow}>

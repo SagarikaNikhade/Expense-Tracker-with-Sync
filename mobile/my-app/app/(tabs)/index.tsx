@@ -15,6 +15,9 @@ import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { addExpense } from '../services/api'; // Adjust the import path as necessary
+import { isOnline } from '../services/network';
+import { syncExpenses } from '../services/sync';
+import { addToQueue, loadExpenses, saveExpenses } from '../storage/localDB';
 
 export default function HomeScreen() {
   const [formData, setFormData] = useState({
@@ -38,34 +41,67 @@ export default function HomeScreen() {
     }
   };
 
+  // const handleSubmit = async () => {
+  //   if (!formData.amount || !formData.category || !formData.description) {
+  //     alert('Please fill in all required fields');
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsSubmitting(true);
+  //     const expenseData = {
+  //       ...formData,
+  //       amount: parseFloat(formData.amount),
+  //     };
+      
+  //     await addExpense(expenseData);  
+  //     // Simulate API or sync call
+  //     alert('Expense added successfully!');
+  //     // setFormData({
+  //     //   amount: '',
+  //     //   category: '',
+  //     //   date: new Date(),
+  //     //   description: '',
+  //     // });
+  //   } catch (error) {
+  //     console.error('Error submitting form:', error);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
-    if (!formData.amount || !formData.category || !formData.description) {
-      alert('Please fill in all required fields');
-      return;
+  if (!formData.amount || !formData.category || !formData.description) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  try {
+    setIsSubmitting(true);
+    const expenseData = {
+      ...formData,
+      amount: parseFloat(formData.amount),
+      date: new Date(formData.date).toISOString(),
+    };
+
+    const online = await isOnline();
+
+    if (online) {
+      await addExpense(expenseData);
+      await syncExpenses(); // trigger sync in case there were old offline entries
+    } else {
+      await addToQueue(expenseData);
+      const localExpenses = await loadExpenses();
+      await saveExpenses([...localExpenses, expenseData]);
     }
 
-    try {
-      setIsSubmitting(true);
-      const expenseData = {
-        ...formData,
-        amount: parseFloat(formData.amount),
-      };
-      
-      await addExpense(expenseData);  
-      // Simulate API or sync call
-      alert('Expense added successfully!');
-      // setFormData({
-      //   amount: '',
-      //   category: '',
-      //   date: new Date(),
-      //   description: '',
-      // });
-    } catch (error) {
-      console.error('Error submitting form:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    alert('Expense saved successfully!');
+  } catch (error) {
+    console.error('Error submitting form:', error);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>
