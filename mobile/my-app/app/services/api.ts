@@ -9,12 +9,12 @@ export const fetchExpenses = async (since = null) => {
   return res.data;
 };
 
-export const addExpense = async (expense) => {
+export const addExpense = async (expense:any) => {
   const res = await axios.post(`${API_URL}/expenses/`, expense);
   return res.data;
 };
 
-export const deleteExpense = async (id) => {
+export const deleteExpense = async (id:any) => {
   await axios.delete(`${API_URL}/expenses/${id}`);
   // return res.data;
 };
